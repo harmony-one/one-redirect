@@ -19,7 +19,8 @@ module.exports = {
     {
       matches: ["<all_urls>"],
       // css: ["styles.css"],
-      js: ["content.js"]
+      js: ["content.js"],
+      run_at: "document_start"
     }
   ],
   icons: {

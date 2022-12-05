@@ -1,5 +1,5 @@
 module.exports = {
-  name: "Browser Extension",
+  name: "One Redirect",
   short_name: "Ext",
-  description: "Browser Extension Boilerplate",
+  description: "One Redirect Boilerplate",
 }

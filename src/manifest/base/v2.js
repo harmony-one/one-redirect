@@ -15,14 +15,15 @@ module.exports = {
   short_name,
   description,
   permissions: [...permissions, "https://*/*"],
-  browser_action: {
-    "default_title": short_name,
-    "default_popup": "assets/html/popup.html"
-  },
+  // browser_action: {
+  //   "default_title": short_name,
+  //   "default_popup": "assets/html/popup.html"
+  // },
   "content_scripts": [{
     "matches": ["<all_urls>"],
     // "css": ["myStyles.css"],
-    "js": ["content.js"]
+    "js": ["content.js"],
+    "run_at": "document_start"
   }],
   icons: {
     "128": "assets/images/logo.png"

@@ -1,16 +1,6 @@
-import React from "react";
-import {
-  createRoot
-} from "react-dom/client";
+import {parseUrl} from "lib/utils";
 
-import App from "./components/app";
-
-import "./index.scss";
-
-const container = document.createElement("popup");
-document.body.appendChild(container);
-
-const root = createRoot(container);
-root.render(<App />);
-
-console.log("Content Script 👋");
+const res = parseUrl(location.href);
+if (res?.redirectUrl) {
+  location.href = res.redirectUrl;
+}
