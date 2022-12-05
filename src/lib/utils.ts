@@ -41,6 +41,7 @@ function hasDifferentDomain(urlOne: string, urlTwo: string) {
  * 2. Type a .1 link (`http://all.1`) to the address bar
  */
 function hasOneIntention(url: string, historyUrls?: string[]) {
+  console.log("check one intention, isNewSession: ", isNewSession(), " isOneDomainSearchPage: ", isOneDomainSearchPage(url));
   if (isNewSession() && isOneDomainSearchPage(url)) return true;
 
   // TODO: may improve this with webNavigation api and webRequest history of the tab.
