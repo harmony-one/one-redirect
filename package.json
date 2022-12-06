@@ -27,7 +27,8 @@
     "start:chrome": "concurrently npm:watch:chrome npm:reload:chrome",
     "start:brave": "concurrently npm:watch:chrome npm:reload:brave",
     "start:firefox": "concurrently npm:watch:firefox npm:reload:firefox",
-    "start": "concurrently npm:watch:chrome npm:reload:brave npm:watch:firefox npm:reload:firefox"
+    "start": "concurrently npm:watch:chrome npm:reload:brave npm:watch:firefox npm:reload:firefox",
+    "test-server": "http-server ./test"
   },
   "author": "Debdut Karmakar <iawaiponly@gmail.com>",
   "license": "ISC",
@@ -55,6 +56,7 @@
     "dotenv": "^16.0.2",
     "generate-json-from-js-webpack-plugin": "^0.1.1",
     "html-webpack-plugin": "^5.5.0",
+    "http-server": "^14.1.1",
     "postcss-loader": "^7.0.1",
     "sass": "^1.54.8",
     "sass-loader": "^13.0.2",

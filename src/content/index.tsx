@@ -3,6 +3,7 @@ import { legalizeUrl, ready, ONE_LINK_REGEX, getExtensionApi, parseUrl } from "l
 // TODO: preserve history for current tab to pass into parseUrl
 // to support that open .1 in current tab.
 
+console.log("Content script: ", location.href);
 const res = parseUrl(location.href);
 if (res?.redirectUrl) {
   location.href = res.redirectUrl;

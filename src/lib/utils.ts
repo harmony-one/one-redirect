@@ -52,6 +52,7 @@ function hasOneIntention(url: string, historyUrls?: string[]) {
 }
 
 export function legalizeUrl(url: string) {
+  if (!url.startsWith('http')) url = `http://${url}`;
   return ONE_LINK_REGEX.test(url) ? url.replace('.1', '.1.country') : url;
 }
 
