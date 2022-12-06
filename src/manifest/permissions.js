@@ -67,7 +67,7 @@ module.exports = [
   // "unlimitedStorage",
   // "vpnProvider",
   // "wallpaper",
-  "webNavigation",
-  "webRequest",
-  "webRequestBlocking"
+  // "webNavigation",
+  // "webRequest",
+  // "webRequestBlocking"
 ]
