@@ -3,6 +3,8 @@ declare var browser: typeof chrome;
 import { detect } from "detect-browser";
 const bw = detect();
 
+export const ONE_LINK_REGEX = /^((http(s)?:\/\/)?[\S.]+)\.1(\/)?$/;
+
 export function getExtensionApi() {
   return bw.name === 'chrome' ? chrome : browser;
 }
@@ -16,7 +18,7 @@ function isNewSession() {
 function isSearchEngineHost(urlStr: string) {
   const url = new URL(urlStr);
   return ["www.bing.com", "www.google.com", "duckduckgo.com"]
-  .includes(url.hostname);
+    .includes(url.hostname);
 }
 
 function getSearchQueryParam(urlStr: string) {
@@ -25,13 +27,13 @@ function getSearchQueryParam(urlStr: string) {
 }
 
 function isOneDomainSearchPage(urlStr: string) {
-  return isSearchEngineHost(urlStr) && /^((http(s)?:\/\/)?[\S.]+)\.1$/.test(getSearchQueryParam(urlStr));
+  return isSearchEngineHost(urlStr) && ONE_LINK_REGEX.test(getSearchQueryParam(urlStr));
 }
 
 function hasDifferentDomain(urlOne: string, urlTwo: string) {
   try {
     return new URL(urlOne).hostname !== new URL(urlTwo).hostname;
-  } catch (e) {}
+  } catch (e) { }
   return false;
 }
 
@@ -49,10 +51,22 @@ function hasOneIntention(url: string, historyUrls?: string[]) {
   return isOneDomainSearchPage(url) && hasDifferentDomain(url, historyUrls[historyUrls.length - 1]);
 }
 
+export function legalizeUrl(url: string) {
+  return ONE_LINK_REGEX.test(url) ? url.replace('.1', '.1.country') : url;
+}
+
 export function parseUrl(url: string, historyUrls?: string[]) {
   if (!hasOneIntention(url, historyUrls)) return;
   const query = getSearchQueryParam(url);
   return {
-    redirectUrl: query.startsWith('http://') || query.startsWith('https://') ? `${query}.country` : `http://${query}.country`,
+    redirectUrl: legalizeUrl(query)
+  }
+}
+
+export function ready(fn) {
+  if (document.readyState !== 'loading') {
+    fn();
+  } else {
+    document.addEventListener('DOMContentLoaded', fn);
   }
 }
