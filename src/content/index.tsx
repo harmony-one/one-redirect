@@ -9,7 +9,7 @@ if (res?.redirectUrl) {
 }
 
 // Hijack link clicks so we can handle `.1` links correctly, otherwise as browser may
-// think its illegal and just open `about:blank#blocked
+// think its illegal and just open `about:blank#blocked`
 ready(() => {
   function getClosestLink(node, root) {
     if (!node || node === root) return;
@@ -32,9 +32,16 @@ ready(() => {
     if (!link) return;
 
     try {
+      const url = link.href;
       // If its a one link, then replace with the targetted legal url before passing it to the default handler.
-      if (ONE_LINK_REGEX.test(link.href)) {
+      if (ONE_LINK_REGEX.test(url)) {
         link.setAttribute('href', legalizeUrl(link.href));
+        // if it's open in new tab, reset the link afterwards.
+        if (link.target === "_blank" || e.ctrlKey || e.metaKey) {
+          setTimeout(() => {
+            link.setAttribute('href', url);
+          });
+        }
       }
     } catch (e) { }
     return true;
