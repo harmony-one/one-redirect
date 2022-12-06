@@ -1,13 +1,32 @@
-import { legalizeUrl, ready, ONE_LINK_REGEX, getExtensionApi, parseUrl } from "lib/utils";
-
-// TODO: preserve history for current tab to pass into parseUrl
-// to support that open .1 in current tab.
+import { legalizeUrl, getTabBasedCacheKey, ready, ONE_LINK_REGEX, getExtensionApi, parseUrl } from "lib/utils";
 
 console.log("Content script: ", location.href);
-const res = parseUrl(location.href);
-if (res?.redirectUrl) {
-  location.href = res.redirectUrl;
-}
+
+const runtime = getExtensionApi().runtime;
+let tabHistories = [];
+
+// store the history of the tab, will be cleaned up in background
+let historyR;
+const historyP = new Promise(r => {
+  historyR = r;
+}); 
+runtime.sendMessage({cmd: "get_tab_history"}, his => {
+  tabHistories = his;
+  historyR();
+});
+
+// Wait at most 10ms for the history before redirecting,
+// we can afford no history ;)
+const maxWaitP = new Promise(r => setTimeout(r, 10));
+Promise.race([historyP, maxWaitP])
+.then(() => {
+  // Redirect immediately if elligble
+  const res = parseUrl(location.href, tabHistories);
+  tabHistories = [];
+  if (res?.redirectUrl) {
+    location.href = res.redirectUrl;
+  }
+});
 
 // Hijack link clicks so we can handle `.1` links correctly, otherwise as browser may
 // think its illegal and just open `about:blank#blocked`

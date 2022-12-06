@@ -43,12 +43,15 @@ function hasDifferentDomain(urlOne: string, urlTwo: string) {
  * 2. Type a .1 link (`http://all.1`) to the address bar
  */
 function hasOneIntention(url: string, historyUrls?: string[]) {
-  console.log("check one intention, isNewSession: ", isNewSession(), " isOneDomainSearchPage: ", isOneDomainSearchPage(url));
+  console.log("check one intention, isNewSession: ", isNewSession(), " isOneDomainSearchPage: ", isOneDomainSearchPage(url), " historyUrls: ", historyUrls);
   if (isNewSession() && isOneDomainSearchPage(url)) return true;
 
   // TODO: may improve this with webNavigation api and webRequest history of the tab.
   // For now, we just treat it as one intention if a one domain search page appears after a different domain.
-  return isOneDomainSearchPage(url) && hasDifferentDomain(url, historyUrls[historyUrls.length - 1]);
+  // Here we use second last, as the last url in history will be the current url.
+  // The edge case is:
+  // 1. If user is on one of the default search result page, and then type the .1 url to the address bar.
+  return isOneDomainSearchPage(url) && hasDifferentDomain(url, historyUrls[historyUrls.length - 2]);
 }
 
 export function legalizeUrl(url: string) {
@@ -70,4 +73,8 @@ export function ready(fn) {
   } else {
     document.addEventListener('DOMContentLoaded', fn);
   }
+}
+
+export function getTabBasedCacheKey(windowId: number, tabId: number) {
+  return `_one_direct_${windowId}_${tabId}`;
 }
