@@ -1,4 +1,4 @@
-import { legalizeUrl, getTabBasedCacheKey, ready, ONE_LINK_REGEX, getExtensionApi, parseUrl } from "lib/utils";
+import { isOneDomainSearchPage, legalizeUrl, getTabBasedCacheKey, ready, ONE_LINK_REGEX, getExtensionApi, parseUrl } from "lib/utils";
 
 console.log("Content script: ", location.href);
 
@@ -9,24 +9,37 @@ let tabHistories = [];
 let historyR;
 const historyP = new Promise(r => {
   historyR = r;
-}); 
-runtime.sendMessage({cmd: "get_tab_history"}, his => {
+});
+runtime.sendMessage({ cmd: "get_tab_history" }, his => {
   tabHistories = his;
   historyR();
 });
 
-// Wait at most 10ms for the history before redirecting,
-// we can afford no history ;)
-const maxWaitP = new Promise(r => setTimeout(r, 10));
-Promise.race([historyP, maxWaitP])
-.then(() => {
-  // Redirect immediately if elligble
-  const res = parseUrl(location.href, tabHistories);
-  tabHistories = [];
-  if (res?.redirectUrl) {
-    location.href = res.redirectUrl;
-  }
-});
+const currentUrl = location.href;
+// The parse / redirect will only happen to urls that we care about.
+if (isOneDomainSearchPage(currentUrl)) {
+  // This is to avoid the content flashing since the redirect is happening in content script.
+  const styleEl = document.createElement('style');
+  styleEl.id = "_one_redirect_temp_style";
+  styleEl.innerHTML = 'html, body {display: none !important;}';
+  document.querySelector('html').appendChild(styleEl);
+
+  // Wait at most 100ms for the history before redirecting,
+  // we can afford no history ;)
+  const maxWaitP = new Promise(r => setTimeout(r, 100));
+  Promise.race([historyP, maxWaitP])
+    .then(() => {
+      // Redirect immediately if elligble
+      const res = parseUrl(location.href, tabHistories);
+      tabHistories = [];
+      if (res?.redirectUrl) {
+        location.href = res.redirectUrl;
+      }
+      // in case of not redirecting, remove the added style override.
+      styleEl.remove();
+    });
+}
+
 
 // Hijack link clicks so we can handle `.1` links correctly, otherwise as browser may
 // think its illegal and just open `about:blank#blocked`

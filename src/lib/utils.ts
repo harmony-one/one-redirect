@@ -26,7 +26,7 @@ function getSearchQueryParam(urlStr: string) {
   return url.searchParams.get('q') ?? '';
 }
 
-function isOneDomainSearchPage(urlStr: string) {
+export function isOneDomainSearchPage(urlStr: string) {
   return isSearchEngineHost(urlStr) && ONE_LINK_REGEX.test(getSearchQueryParam(urlStr));
 }
 

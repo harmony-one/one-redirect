@@ -10,4 +10,5 @@ npm run prebuild
 npm run init:profile
 npm run build:<browser_name> # brave | chrome | firefox | safari | chromev2
 npm run start:<browser_name> # brave | chrome | firefox
+npm run test-server # open a local server with examples showcase how `.1` links will be redirected
 ```
