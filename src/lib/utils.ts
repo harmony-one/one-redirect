@@ -48,7 +48,7 @@ export function isOneIntentionLink(urlStr: string) {
   const protocol = getProtocol(urlStr);
   const urlNoProto = urlStr.replace(PROTOCOL_REGEXP, '');
   // No redirect for ip addresses
-  if (IP_REGEXP.test(urlStr)) return false;
+  if (IP_REGEXP.test(urlNoProto)) return false;
   // It has to be a valid url format.
   if (!URL_REGEX_NO_PROTOCOL.test(urlNoProto)) return false;
 
