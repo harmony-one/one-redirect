@@ -7,7 +7,7 @@ const bw = detect();
 // https://regex101.com/r/MoiGZG/1, should be excluded for our redirect.
 const IP_REGEXP = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/;
 // https://regex101.com/r/OTKUMy/1
-const PROTOCOL_REGEXP = /^(http(s)?:\/\/)/;
+const PROTOCOL_REGEXP = /^(http(s)?):\/\//;
 // https://regex101.com/r/tdVq8Y/1
 // URL regex that matches the official url definition,
 // taken from https://stackoverflow.com/a/3809435
@@ -35,11 +35,20 @@ function getSearchQueryParam(urlStr: string) {
   return url.searchParams.get('q') ?? '';
 }
 
+function getProtocol(urlStr: string) {
+  const m = PROTOCOL_REGEXP.exec(urlStr);
+  if (m && m[1]) {
+    return m[1];
+  }
+  return 'http';
+}
+
 export function isOneIntentionLink(urlStr: string) {
+  // Strip off the protocol
+  const protocol = getProtocol(urlStr);
+  const urlNoProto = urlStr.replace(PROTOCOL_REGEXP, '');
   // No redirect for ip addresses
   if (IP_REGEXP.test(urlStr)) return false;
-  // Strip off the protocol
-  const urlNoProto = urlStr.replace(PROTOCOL_REGEXP, '');
   // It has to be a valid url format.
   if (!URL_REGEX_NO_PROTOCOL.test(urlNoProto)) return false;
 
@@ -50,7 +59,7 @@ export function isOneIntentionLink(urlStr: string) {
   try {
     // Only consider it's a one domain search page if the search query can be constructed into
     // a valid url after adding `.country` to the domain.
-    const queryUrl = new URL(`${matches[1]}.country${matches[2]}`);
+    const queryUrl = new URL(`${protocol}://${matches[1]}.country${matches[2]}`);
     return true;
   } catch (e) {
     return false;
@@ -87,13 +96,14 @@ function hasOneIntention(url: string, historyUrls?: string[]) {
   return isOneDomainSearchPage(url) && hasDifferentDomain(url, historyUrls[historyUrls.length - 2]);
 }
 
-export function legalizeUrl(url: string) {
-  url = url.replace(PROTOCOL_REGEXP, '');
+export function legalizeUrl(urlStr: string) {
+  const protocol = getProtocol(urlStr);
+  const url = urlStr.replace(PROTOCOL_REGEXP, '');
   if (isOneIntentionLink(url)) {
     const matches = URL_REGEX_NO_PROTOCOL.exec(url);
-    return `${matches[1]}.country${matches[2]}`;
+    return `${protocol}://${matches[1]}.country${matches[2]}`;
   }
-  return url;
+  return urlStr;
 }
 
 export function parseUrl(url: string, historyUrls?: string[]) {
