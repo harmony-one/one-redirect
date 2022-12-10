@@ -1,4 +1,4 @@
-import { isOneDomainSearchPage, legalizeUrl, getTabBasedCacheKey, ready, ONE_LINK_REGEX, getExtensionApi, parseUrl } from "lib/utils";
+import { isOneDomainSearchPage, legalizeUrl, ready, isOneIntentionLink, getExtensionApi, parseUrl } from "lib/utils";
 
 console.log("Content script: ", location.href);
 
@@ -66,8 +66,8 @@ ready(() => {
 
     try {
       const url = link.href;
-      // If its a one link, then replace with the targetted legal url before passing it to the default handler.
-      if (ONE_LINK_REGEX.test(url)) {
+      // If its a one intention link, then replace with the targetted legal url before passing it to the default handler.
+      if (isOneIntentionLink(url)) {
         link.setAttribute('href', legalizeUrl(link.href));
         // if it's open in new tab, reset the link afterwards.
         if (link.target === "_blank" || e.ctrlKey || e.metaKey) {
@@ -76,7 +76,9 @@ ready(() => {
           });
         }
       }
-    } catch (e) { }
+    } catch (e) {
+      console.log(e);
+     }
     return true;
   });
 });

@@ -3,7 +3,16 @@ declare var browser: typeof chrome;
 import { detect } from "detect-browser";
 const bw = detect();
 
-export const ONE_LINK_REGEX = /^((http(s)?:\/\/)?[\S.]+)\.1(\/)?$/;
+
+// https://regex101.com/r/MoiGZG/1, should be excluded for our redirect.
+const IP_REGEXP = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/;
+// https://regex101.com/r/OTKUMy/1
+const PROTOCOL_REGEXP = /^(http(s)?):\/\//;
+// https://regex101.com/r/tdVq8Y/1
+// URL regex that matches the official url definition,
+// taken from https://stackoverflow.com/a/3809435
+const URL_REGEX_NO_PROTOCOL = /^([-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+
 
 export function getExtensionApi() {
   return bw.name === 'chrome' ? chrome : browser;
@@ -26,8 +35,41 @@ function getSearchQueryParam(urlStr: string) {
   return url.searchParams.get('q') ?? '';
 }
 
+function getProtocol(urlStr: string) {
+  const m = PROTOCOL_REGEXP.exec(urlStr);
+  if (m && m[1]) {
+    return m[1];
+  }
+  return 'http';
+}
+
+export function isOneIntentionLink(urlStr: string) {
+  // Strip off the protocol
+  const protocol = getProtocol(urlStr);
+  const urlNoProto = urlStr.replace(PROTOCOL_REGEXP, '');
+  // No redirect for ip addresses
+  if (IP_REGEXP.test(urlNoProto.replace(/\/+$/, ''))) return false;
+  // It has to be a valid url format.
+  if (!URL_REGEX_NO_PROTOCOL.test(urlNoProto)) return false;
+
+  const matches = URL_REGEX_NO_PROTOCOL.exec(urlNoProto);
+  // We only consider its one intention if its trying to go to .1
+  if (!matches[1].endsWith(".1")) return false;
+
+  try {
+    // Only consider it's a one domain search page if the search query can be constructed into
+    // a valid url after adding `.country` to the domain.
+    const queryUrl = new URL(`${protocol}://${matches[1]}.country${matches[2]}`);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 export function isOneDomainSearchPage(urlStr: string) {
-  return isSearchEngineHost(urlStr) && ONE_LINK_REGEX.test(getSearchQueryParam(urlStr));
+  const searchQueryParam = getSearchQueryParam(urlStr);
+  if (!isSearchEngineHost(urlStr)) return false;
+  return isOneIntentionLink(searchQueryParam);
 }
 
 function hasDifferentDomain(urlOne: string, urlTwo: string) {
@@ -54,9 +96,14 @@ function hasOneIntention(url: string, historyUrls?: string[]) {
   return isOneDomainSearchPage(url) && hasDifferentDomain(url, historyUrls[historyUrls.length - 2]);
 }
 
-export function legalizeUrl(url: string) {
-  if (!url.startsWith('http')) url = `http://${url}`;
-  return ONE_LINK_REGEX.test(url) ? url.replace('.1', '.1.country') : url;
+export function legalizeUrl(urlStr: string) {
+  const protocol = getProtocol(urlStr);
+  const url = urlStr.replace(PROTOCOL_REGEXP, '');
+  if (isOneIntentionLink(url)) {
+    const matches = URL_REGEX_NO_PROTOCOL.exec(url);
+    return `${protocol}://${matches[1]}.country${matches[2]}`;
+  }
+  return urlStr;
 }
 
 export function parseUrl(url: string, historyUrls?: string[]) {
