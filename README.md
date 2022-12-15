@@ -3,13 +3,13 @@
 Support redirect `xx.1` to `xx.1.country` even tho the browser does not recognized `.1` domain.
 
 #### Testing
-
+```
 npm install
 npm run prebuild
 npm run init
 npm run build
 npm run start
-
+```
 #### Build
 ```
 npm install
