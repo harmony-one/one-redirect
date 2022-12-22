@@ -11,7 +11,9 @@ const PROTOCOL_REGEXP = /^(http(s)?):\/\//;
 // https://regex101.com/r/tdVq8Y/1
 // URL regex that matches the official url definition,
 // taken from https://stackoverflow.com/a/3809435
-const URL_REGEX_NO_PROTOCOL = /^([-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6})\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
+// A TLD's maximum length is 63 characters, although most are around 2–3:
+// https://developer.mozilla.org/en-US/docs/Learn/Common_questions/What_is_a_domain_name
+const URL_REGEX_NO_PROTOCOL = /^([-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,63})\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)$/;
 
 
 export function getExtensionApi() {
