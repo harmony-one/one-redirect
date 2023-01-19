@@ -55,8 +55,8 @@ export function isOneIntentionLink(urlStr: string) {
   if (!URL_REGEX_NO_PROTOCOL.test(urlNoProto)) return false;
 
   const matches = URL_REGEX_NO_PROTOCOL.exec(urlNoProto);
-  // We only consider its one intention if its trying to go to .1
-  if (!matches[1].endsWith(".1")) return false;
+  // We only consider its one intention if it's trying to go to .1
+  if (!matches[1].endsWith(".0") && !matches[1].endsWith(".1")) return false;
 
   try {
     // Only consider it's a one domain search page if the search query can be constructed into
