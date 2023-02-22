@@ -103,7 +103,10 @@ export function legalizeUrl(urlStr: string) {
   const url = urlStr.replace(PROTOCOL_REGEXP, '');
   if (isOneIntentionLink(url)) {
     const matches = URL_REGEX_NO_PROTOCOL.exec(url);
-    return `${protocol}://${matches[1]}.country${matches[2]}`;
+    const fullDomain = matches[1]
+    const rootDomain = fullDomain.endsWith('.0') ? '.0' : '.1'
+    const [ userDomain ] = fullDomain.split(rootDomain)
+    return `${protocol}://${userDomain}.country${matches[2]}`;
   }
   return urlStr;
 }
