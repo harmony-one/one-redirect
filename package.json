@@ -1,6 +1,6 @@
 {
   "name": "one-redirect",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "support .1 domain for any browser",
   "engines": {
     "node": ">=16.13.1",
